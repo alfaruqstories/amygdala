@@ -1,0 +1,23 @@
+{
+  "name": "amygdala",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Amygdala — the memory store. Milestone 1: two doors (save + recall) over a thin store.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.0",
+    "ai": "^5.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260927.1",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.40.0"
+  }
+}
