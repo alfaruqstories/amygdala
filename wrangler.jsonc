@@ -1,0 +1,34 @@
+// Amygdala — Cloudflare deployment plug (the only place the stack is named in config).
+// Storage boundary (store-blob / store-row / search-vectors) maps onto:
+//   store-blob      -> R2 bucket (immutable raw evidence blobs)
+//   store-row       -> D1 (evidence/knowledge/label/fingerprint rows, room-keyed)
+//   search-vectors  -> the tenant's Durable Object owns its own vector slice
+//                      (isolation by construction: no shared index, no tenant filter)
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "amygdala",
+  "main": "src/cloudflare/worker.ts",
+  "compatibility_date": "2025-09-01",
+
+  "durable_objects": {
+    "bindings": [{ "name": "ROOM", "class_name": "TenantRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TenantRoom"] }],
+
+  "d1_databases": [
+    { "binding": "DB", "database_name": "amygdala", "database_id": "REPLACE_WITH_D1_ID" }
+  ],
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "amygdala-evidence" }
+  ],
+  "ai": { "binding": "AI" },
+
+  // Extraction model calls go through the gateway via the Vercel AI SDK
+  // (OpenAI-compatible endpoint). Tier pinned by the brief: mid-tier reader.
+  // Embeddings are Cloudflare's own (Workers AI) — NOT via the gateway.
+  "vars": {
+    "MIDTIER_MODEL": "gpt-4o-mini",
+    "GATEWAY_BASE_URL": "https://REPLACE_WITH_GATEWAY_HOST/v1"
+  }
+  // Secret: GATEWAY_API_KEY (set with `wrangler secret put GATEWAY_API_KEY`).
+}
